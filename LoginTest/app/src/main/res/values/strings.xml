@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LoginTest</string>
+    <string name="number">账号</string>
+    <string name="please_input_number">please input number</string>
+    <string name="code">密码</string>
+    <string name="please_input_code">please input code</string>
+</resources>
