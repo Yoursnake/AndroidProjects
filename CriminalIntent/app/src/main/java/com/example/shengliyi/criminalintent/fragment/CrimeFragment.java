@@ -1,9 +1,10 @@
 package com.example.shengliyi.criminalintent.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -25,7 +26,7 @@ import java.util.UUID;
  * Created by shengliyi on 2017/1/18.
  */
 
-public class CrimeFragment extends android.support.v4.app.Fragment{
+public class CrimeFragment extends Fragment {
 
     private Crime crime;
     private String content;
@@ -37,10 +38,13 @@ public class CrimeFragment extends android.support.v4.app.Fragment{
     public static final String EXTRA_CRIME_ID =
             "com.example.shengliyi.criminalintent.crime_id";
 
+    private static final String DIALOG_DATE = "date";
+    private static final int REQUEST_DATE = 0;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 //        UUID crimeId = (UUID)getActivity().getIntent()
 //                .getSerializableExtra(EXTRA_CRIME_ID);
 
@@ -84,7 +88,16 @@ public class CrimeFragment extends android.support.v4.app.Fragment{
         dateButton = (Button)view.findViewById(R.id.crime_date_button);
         DateFormat dateFormat = new DateFormat();
         dateButton.setText(dateFormat.format("E,MM dd,yyyy",crime.getDate()));
-        dateButton.setEnabled(false);
+//        dateButton.setEnabled(false);
+        dateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(crime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                dialog.show(fm, DIALOG_DATE);
+            }
+        });
 
         /*solved CheckBox*/
         solvedCheckBox = (CheckBox)view.findViewById(R.id.crime_solved_checkbox);
@@ -112,7 +125,7 @@ public class CrimeFragment extends android.support.v4.app.Fragment{
         outState.putString("Crime Title",content);
     }
 
-    public static CrimeFragment newInstance(UUID crimeId){
+    public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(EXTRA_CRIME_ID, crimeId);
 

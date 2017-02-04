@@ -31,7 +31,7 @@ public class CrimePagerActivity extends FragmentActivity{
         viewPager.setId(R.id.viewPager);    //在res/values/ids.xml中注册了id
         setContentView(viewPager);
 
-        crimes = CrimeLab.getInstance(this).getCrimes();
+        crimes = CrimeLab.getInstance(this).getCrimes();    //由于这里CrimeLab是单例，所以crimes和CrimeListFragment中的是同一个
         FragmentManager fm = getSupportFragmentManager();
 
         viewPager.setAdapter(new FragmentStatePagerAdapter(fm) {
@@ -46,5 +46,34 @@ public class CrimePagerActivity extends FragmentActivity{
                 return crimes.size();
             }
         });
+
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Crime crime = crimes.get(position);
+                if (crime.getTitle() != null) {
+                    setTitle(crime.getTitle());
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        UUID crimeId = (UUID)getIntent()
+                .getSerializableExtra(CrimeFragment.EXTRA_CRIME_ID);
+        for (int i = 0; i < crimes.size(); i++) {
+            if (crimes.get(i).getId().equals(crimeId)) {
+                viewPager.setCurrentItem(i);
+                break;
+            }
+        }
     }
 }
