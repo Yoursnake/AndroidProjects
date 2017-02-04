@@ -59,7 +59,7 @@ public class DatePickerFragment extends DialogFragment {
 
         return new AlertDialog.Builder(getActivity())
                 .setView(view)
-                .setTitle(R.string.data_picker_title)
+                .setTitle(R.string.date_picker_title)
                 .setPositiveButton(
                         android.R.string.ok,
                         new DialogInterface.OnClickListener() {

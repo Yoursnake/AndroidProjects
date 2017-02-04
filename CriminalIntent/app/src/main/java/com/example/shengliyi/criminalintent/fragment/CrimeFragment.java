@@ -35,6 +35,7 @@ public class CrimeFragment extends Fragment {
 
     private EditText crimeTitle;
     private Button dateButton;
+    private Button timeButton;
     private CheckBox solvedCheckBox;
 
     public static final String EXTRA_CRIME_ID =
@@ -42,7 +43,9 @@ public class CrimeFragment extends Fragment {
 
     private static final String CRIME_TITLE = "com.example.shengliyi.criminalintent.crime_title";
     private static final String DIALOG_DATE = "date";
+    private static final String DIALOG_TIME = "time";
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_TIME = 1;
 
 
     @Override
@@ -95,9 +98,22 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 FragmentManager fm = getActivity().getSupportFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(crime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);   //建立CrimeFragment和DatePickerFragment之间的联系
-                dialog.show(fm, DIALOG_DATE);
+                DatePickerFragment dateDialog = DatePickerFragment.newInstance(crime.getDate());
+                dateDialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);   //建立CrimeFragment和DatePickerFragment之间的联系
+                dateDialog.show(fm, DIALOG_DATE);
+            }
+        });
+
+        /*time Button*/
+        timeButton = (Button)view.findViewById(R.id.crime_time_button);
+        updateTime();
+        timeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                TimePickerFragment timeDialog = TimePickerFragment.newInstance(crime.getDate());
+                timeDialog.setTargetFragment(CrimeFragment.this, REQUEST_TIME);
+                timeDialog.show(fm, DIALOG_TIME);
             }
         });
 
@@ -146,16 +162,30 @@ public class CrimeFragment extends Fragment {
         if (resultCode != Activity.RESULT_OK) {
             return;
         }
-        if (requestCode == REQUEST_DATE) {
-            Date date = (Date)data
-                    .getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            crime.setDate(date);
-            updateDate();
+        switch (requestCode) {
+            case REQUEST_DATE:{
+                Date date = (Date)data
+                        .getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+                crime.setDate(date);
+                updateDate();
+            }
+            case REQUEST_TIME:{
+                Date time = (Date)data
+                        .getSerializableExtra(TimePickerFragment.EXTRA_TIME);
+                crime.setDate(time);
+                updateTime();
+            }
         }
+
+
     }
 
     public void updateDate(){
         DateFormat dateFormat = new DateFormat();
         dateButton.setText(dateFormat.format("E,MM dd,yyyy",crime.getDate()));
+    }
+    public void updateTime(){
+        DateFormat dateFormat = new DateFormat();
+        timeButton.setText(dateFormat.format("HH:mm",crime.getDate()));
     }
 }
