@@ -1,6 +1,7 @@
 package com.example.shengliyi.criminalintent.fragment;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import com.example.shengliyi.criminalintent.R;
 import com.example.shengliyi.criminalintent.model.Crime;
 import com.example.shengliyi.criminalintent.model.CrimeLab;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -38,6 +40,7 @@ public class CrimeFragment extends Fragment {
     public static final String EXTRA_CRIME_ID =
             "com.example.shengliyi.criminalintent.crime_id";
 
+    private static final String CRIME_TITLE = "com.example.shengliyi.criminalintent.crime_title";
     private static final String DIALOG_DATE = "date";
     private static final int REQUEST_DATE = 0;
 
@@ -54,7 +57,7 @@ public class CrimeFragment extends Fragment {
 
 
         if(savedInstanceState != null){
-            content = savedInstanceState.getString("Crime Title");
+            content = savedInstanceState.getString(CRIME_TITLE);
         }
 
     }
@@ -86,15 +89,14 @@ public class CrimeFragment extends Fragment {
 
         /*date Button*/
         dateButton = (Button)view.findViewById(R.id.crime_date_button);
-        DateFormat dateFormat = new DateFormat();
-        dateButton.setText(dateFormat.format("E,MM dd,yyyy",crime.getDate()));
+        updateDate();
 //        dateButton.setEnabled(false);
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(crime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);   //建立CrimeFragment和DatePickerFragment之间的联系
                 dialog.show(fm, DIALOG_DATE);
             }
         });
@@ -122,7 +124,7 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("Crime Title",content);
+        outState.putString(CRIME_TITLE,content);
     }
 
     public static CrimeFragment newInstance(UUID crimeId) {
@@ -137,5 +139,23 @@ public class CrimeFragment extends Fragment {
 
     public void returnResult(){
         getActivity().setResult(Activity.RESULT_OK, null);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+        if (requestCode == REQUEST_DATE) {
+            Date date = (Date)data
+                    .getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            crime.setDate(date);
+            updateDate();
+        }
+    }
+
+    public void updateDate(){
+        DateFormat dateFormat = new DateFormat();
+        dateButton.setText(dateFormat.format("E,MM dd,yyyy",crime.getDate()));
     }
 }
