@@ -67,7 +67,7 @@ public class TimePickerFragment extends DialogFragment {
     }
 
     public static TimePickerFragment newInstance(Date time) {
-
+  
         Bundle args = new Bundle();
         args.putSerializable(EXTRA_TIME, time);
 
