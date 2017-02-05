@@ -1,9 +1,12 @@
-package com.example.shengliyi.hellomoon;
+package com.example.shengliyi.hellomoon.Activity;
 
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class HelloMoonActivity extends AppCompatActivity {
+import com.example.shengliyi.hellomoon.R;
+
+public class HelloMoonActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
