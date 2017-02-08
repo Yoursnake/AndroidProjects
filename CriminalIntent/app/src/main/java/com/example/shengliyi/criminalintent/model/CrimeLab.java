@@ -13,6 +13,7 @@ Crime工厂
 通过 getInstance() 方法得到单例
 对Crime列表做一个初始化
 可以通过 getCrime(UUID) 和 getCrimes() 方法来得到 crime 和 crimes 列表
+通过 addCrime(Crime crime) 方法可以添加 crime
 */
 public class CrimeLab {
     private ArrayList<Crime> crimes;
@@ -23,12 +24,6 @@ public class CrimeLab {
     private CrimeLab(Context appContext) {
         this.appContext = appContext;
         crimes = new ArrayList<Crime>();
-        for (int i = 0; i < 100; i++) {
-            Crime c = new Crime();
-            c.setTitle("Crime # " + i);
-            c.setSolved(i % 2 == 0);
-            crimes.add(c);
-        }
     }
 
     public static CrimeLab getInstance(Context c) {
@@ -45,6 +40,10 @@ public class CrimeLab {
             }
         }
         return null;
+    }
+
+    public void addCrime(Crime crime){
+        crimes.add(crime);
     }
 
     public ArrayList<Crime> getCrimes(){

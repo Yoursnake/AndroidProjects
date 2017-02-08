@@ -36,6 +36,7 @@ public class TimePickerFragment extends DialogFragment {
 
         time = (Date)getArguments().getSerializable(EXTRA_TIME);
         Calendar calendar = Calendar.getInstance();
+        calendar.setTime(time);
         final int year = calendar.get(Calendar.YEAR);
         final int month = calendar.get(Calendar.MONTH);
         final int day = calendar.get(Calendar.DAY_OF_MONTH);

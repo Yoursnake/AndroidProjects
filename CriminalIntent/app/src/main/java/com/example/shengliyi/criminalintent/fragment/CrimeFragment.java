@@ -1,15 +1,19 @@
 package com.example.shengliyi.criminalintent.fragment;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -54,6 +58,8 @@ public class CrimeFragment extends Fragment {
 //        UUID crimeId = (UUID)getActivity().getIntent()
 //                .getSerializableExtra(EXTRA_CRIME_ID);
 
+        setHasOptionsMenu(true);
+
         UUID crimeId = (UUID)getArguments()
                 .getSerializable(EXTRA_CRIME_ID);
         crime = CrimeLab.getInstance(getActivity()).getCrime(crimeId);
@@ -65,10 +71,17 @@ public class CrimeFragment extends Fragment {
 
     }
 
+    @TargetApi(11)
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime,container,false);
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+//            if (NavUtils.getParentActivityName(getActivity()) != null) {
+//                getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+//            }
+//        }
 
         /*crime Title*/
         crimeTitle = (EditText)view.findViewById(R.id.crime_title);
@@ -167,14 +180,15 @@ public class CrimeFragment extends Fragment {
                 Date date = (Date)data
                         .getSerializableExtra(DatePickerFragment.EXTRA_DATE);
                 crime.setDate(date);
-                updateDate();
+                updateDate();break;
             }
             case REQUEST_TIME:{
                 Date time = (Date)data
                         .getSerializableExtra(TimePickerFragment.EXTRA_TIME);
                 crime.setDate(time);
-                updateTime();
+                updateTime();break;
             }
+            default:
         }
 
 
@@ -187,5 +201,18 @@ public class CrimeFragment extends Fragment {
     public void updateTime(){
         DateFormat dateFormat = new DateFormat();
         timeButton.setText(dateFormat.format("HH:mm",crime.getDate()));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                if (NavUtils.getParentActivityName(getActivity()) != null) {
+                    NavUtils.navigateUpFromSameTask(getActivity());
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

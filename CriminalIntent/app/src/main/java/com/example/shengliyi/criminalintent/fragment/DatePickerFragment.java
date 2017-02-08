@@ -41,6 +41,8 @@ public class DatePickerFragment extends DialogFragment {
         int year = calendar.get(Calendar.YEAR);
         final int month = calendar.get(Calendar.MONTH);
         final int day = calendar.get(Calendar.DAY_OF_MONTH);
+        final int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        final int minute = calendar.get(Calendar.MINUTE);
 
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_date,null);
 //        DatePicker dp = new DatePicker(getActivity());
@@ -51,7 +53,7 @@ public class DatePickerFragment extends DialogFragment {
             @Override
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 //用calendar得到的year，month，day重新转换成一个Date对象
-                date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
+                date = new GregorianCalendar(year, monthOfYear, dayOfMonth, hour, minute).getTime();
                 //防止旋转导致的数据丢失
                 getArguments().putSerializable(EXTRA_DATE, date);
             }
