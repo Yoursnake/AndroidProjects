@@ -22,6 +22,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import com.example.shengliyi.criminalintent.R;
+import com.example.shengliyi.criminalintent.activity.CrimePagerActivity;
 import com.example.shengliyi.criminalintent.model.Crime;
 import com.example.shengliyi.criminalintent.model.CrimeLab;
 
@@ -77,11 +78,12 @@ public class CrimeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime,container,false);
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//            if (NavUtils.getParentActivityName(getActivity()) != null) {
-//                getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-//            }
-//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (NavUtils.getParentActivityName(getActivity()) != null) {
+                CrimePagerActivity activity = (CrimePagerActivity) getActivity();
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+        }
 
         /*crime Title*/
         crimeTitle = (EditText)view.findViewById(R.id.crime_title);
@@ -203,6 +205,7 @@ public class CrimeFragment extends Fragment {
         timeButton.setText(dateFormat.format("HH:mm",crime.getDate()));
     }
 
+    @TargetApi(11)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){

@@ -1,23 +1,27 @@
 package com.example.shengliyi.criminalintent.fragment;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ListFragment;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.shengliyi.criminalintent.R;
 import com.example.shengliyi.criminalintent.activity.CrimeActivity;
+import com.example.shengliyi.criminalintent.activity.CrimeListActivity;
 import com.example.shengliyi.criminalintent.activity.CrimePagerActivity;
 import com.example.shengliyi.criminalintent.model.Crime;
 import com.example.shengliyi.criminalintent.model.CrimeLab;
@@ -32,6 +36,9 @@ import java.util.ArrayList;
 public class CrimeListFragment extends ListFragment {
 
     private ArrayList<Crime> crimes;
+    private boolean subtitleVisible;
+    private Button addCrimeButton;
+
     private static final int REQUEST_CRIME = 1;
     public static final String TAG = "CrimeListFragment";
 
@@ -40,12 +47,37 @@ public class CrimeListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
+
+        subtitleVisible = false;  //初始化时因为子标题没有显示，所有subtitleVisible是false
 
         getActivity().setTitle(R.string.crimes_title);
         crimes = CrimeLab.getInstance(getActivity()).getCrimes();
 
         CrimeAdapter adapter = new CrimeAdapter(crimes);
         setListAdapter(adapter);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_crime_list,container, false);
+
+        addCrimeButton = (Button)view.findViewById(R.id.add_crime_button);
+        addCrimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCrime();
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (subtitleVisible) {
+                CrimeListActivity activity = (CrimeListActivity)getActivity();
+                activity.getSupportActionBar().setSubtitle(R.string.subtitle);
+            }
+        }
+
+        return view;
     }
 
     @Override
@@ -106,20 +138,41 @@ public class CrimeListFragment extends ListFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime_list, menu);
+
+        MenuItem showSubtitle = menu.findItem(R.id.menu_item_show_subtitle);
+        if (subtitleVisible && showSubtitle != null) {
+            showSubtitle.setTitle(R.string.hide_subtitle);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_item_new_crime:
-                Crime crime = new Crime();
-                CrimeLab.getInstance(getActivity()).addCrime(crime);
-                Intent intent = new Intent(getActivity(), CrimePagerActivity.class);
-                intent.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
-                startActivityForResult(intent, 0);
+                addCrime();
+                return true;
+            case R.id.menu_item_show_subtitle:
+                CrimeListActivity activity = (CrimeListActivity) getActivity();
+                if (activity.getSupportActionBar().getSubtitle() == null) {
+                    activity.getSupportActionBar().setSubtitle(R.string.subtitle);
+                    subtitleVisible = true;
+                    item.setTitle(R.string.hide_subtitle);
+                }else {
+                    activity.getSupportActionBar().setSubtitle(null);
+                    subtitleVisible = false;
+                    item.setTitle(R.string.show_subtitle);
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void addCrime(){
+        Crime crime = new Crime();
+        CrimeLab.getInstance(getActivity()).addCrime(crime);
+        Intent intent = new Intent(getActivity(), CrimePagerActivity.class);
+        intent.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
+        startActivityForResult(intent, 0);
     }
 }
