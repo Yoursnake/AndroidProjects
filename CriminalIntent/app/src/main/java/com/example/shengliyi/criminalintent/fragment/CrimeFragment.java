@@ -12,7 +12,10 @@ import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +25,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import com.example.shengliyi.criminalintent.R;
+import com.example.shengliyi.criminalintent.activity.CrimeListActivity;
 import com.example.shengliyi.criminalintent.activity.CrimePagerActivity;
 import com.example.shengliyi.criminalintent.model.Crime;
 import com.example.shengliyi.criminalintent.model.CrimeLab;
@@ -78,10 +82,12 @@ public class CrimeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime,container,false);
 
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             if (NavUtils.getParentActivityName(getActivity()) != null) {
                 CrimePagerActivity activity = (CrimePagerActivity) getActivity();
-                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true); //在CrimePagerActivity的操作栏设置HOME键
             }
         }
 
@@ -205,6 +211,12 @@ public class CrimeFragment extends Fragment {
         timeButton.setText(dateFormat.format("HH:mm",crime.getDate()));
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.crime_list_item_context, menu);
+    }
+
     @TargetApi(11)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -213,6 +225,11 @@ public class CrimeFragment extends Fragment {
                 if (NavUtils.getParentActivityName(getActivity()) != null) {
                     NavUtils.navigateUpFromSameTask(getActivity());
                 }
+                return true;
+            case R.id.menu_item_delete_crime:
+                Intent intent = new Intent(getActivity(), CrimeListActivity.class);
+                CrimeLab.getInstance(getActivity()).deleteCrime(crime);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
