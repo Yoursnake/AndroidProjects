@@ -3,6 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/background_activated">
+    <!--这里的background表示已激活状态下显示的背景-->
 
     <CheckBox
         android:id="@+id/crime_list_item_solvedCheckBox"

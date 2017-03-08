@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/Users/shengliyi/AndroidStudioProjects/CriminalIntent/actionbarsherlock/build/intermediates/res/merged/androidTest/debug/layout-xlarge-v4/abs__screen_action_bar_overlay.xml",
+        "source": "/Users/shengliyi/AndroidStudioProjects/CriminalIntent/actionbarsherlock/build/intermediates/bundles/debug/res/layout-xlarge-v4/abs__screen_action_bar_overlay.xml"
+    },
+    {
+        "merged": "/Users/shengliyi/AndroidStudioProjects/CriminalIntent/actionbarsherlock/build/intermediates/res/merged/androidTest/debug/layout-xlarge-v4/abs__screen_action_bar.xml",
+        "source": "/Users/shengliyi/AndroidStudioProjects/CriminalIntent/actionbarsherlock/build/intermediates/bundles/debug/res/layout-xlarge-v4/abs__screen_action_bar.xml"
+    }
+]

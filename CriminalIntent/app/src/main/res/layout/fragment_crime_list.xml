@@ -7,6 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"></ListView>
 
+    <!--id/empty表示视图中没有列表是的视图是此视图-->
     <RelativeLayout
         android:id="@android:id/empty"
         android:layout_width="match_parent"
