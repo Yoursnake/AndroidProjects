@@ -1,6 +1,5 @@
 package com.example.shengliyi.hellomoon.Fragment;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,12 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.VideoView;
 
-import com.example.shengliyi.hellomoon.Model.AudioPlayer;
+import com.example.shengliyi.hellomoon.Entity.AudioPlayer;
 import com.example.shengliyi.hellomoon.R;
-
-import java.io.Serializable;
 
 /**
  * Created by shengliyi on 2017/2/5.

@@ -1,10 +1,8 @@
-package com.example.shengliyi.hellomoon.Model;
+package com.example.shengliyi.hellomoon.Entity;
 
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.widget.Button;
 
-import com.example.shengliyi.hellomoon.Activity.HelloMoonActivity;
 import com.example.shengliyi.hellomoon.Fragment.HelloMoonFragment;
 import com.example.shengliyi.hellomoon.R;
 
