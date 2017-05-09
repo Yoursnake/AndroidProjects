@@ -6,6 +6,9 @@ import android.widget.Toast;
 
 import com.example.shengliyi.photogallery.activity.PhotoGalleryActivity;
 import com.example.shengliyi.photogallery.entity.GalleryItem;
+import com.example.shengliyi.photogallery.entity.PhotoBean;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,6 +64,8 @@ public class FlickrFetchr {
 
         List<GalleryItem> items = new ArrayList<>();
 
+
+        // https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=0dd2bf7a825d7517b3b7be1aee77adc9&format=json&nojsoncallback=1&extras=url_s
         try {
             String url = Uri.parse("https://api.flickr.com/services/rest/")
                     .buildUpon()
@@ -72,14 +77,16 @@ public class FlickrFetchr {
                     .build().toString();
             String jsonString = getUrlString(url);
             Log.i(TAG, "Received json:" + jsonString);
-            JSONObject jsonBody = new JSONObject(jsonString);
-            parseItem(items, jsonBody);
+
+            Gson gson = new Gson();
+            PhotoBean photoBean = gson.fromJson(jsonString, PhotoBean.class);
+            items = photoBean.getPhotosInfo().getPhoto();
+
+//            JSONObject jsonBody = new JSONObject(jsonString);
+//            parseItem(items, jsonBody);
         } catch (IOException e) {
             e.printStackTrace();
             Log.d(TAG, "Failed to fetch json:", e);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.d(TAG, "Failed to convert json:", e);
         }
 
         return items;
@@ -88,6 +95,8 @@ public class FlickrFetchr {
     private void parseItem(List<GalleryItem> items, JSONObject jsonObject) throws IOException, JSONException {
         JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
         JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
+
+
 
         for (int i = 0; i < photoJsonArray.length(); i++) {
             JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);

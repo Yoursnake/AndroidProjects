@@ -1,4 +1,4 @@
-package com.example.shengliyi.criminalintentclass.Fragment;
+package com.example.shengliyi.criminalintentclass.fragment;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -37,7 +37,7 @@ public class DatePickerFragment extends DialogFragment {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        final int minite = calendar.get(Calendar.MINUTE);
+        final int minute = calendar.get(Calendar.MINUTE);
         final int second = calendar.get(Calendar.SECOND);
 
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_date,null);
@@ -53,7 +53,7 @@ public class DatePickerFragment extends DialogFragment {
                         int year = mDatePicker.getYear();
                         int month = mDatePicker.getMonth();
                         int day = mDatePicker.getDayOfMonth();
-                        Date date = new GregorianCalendar(year,month,day,hour,minite,second).getTime();
+                        Date date = new GregorianCalendar(year,month,day,hour,minute,second).getTime();
                         sendResult(Activity.RESULT_OK, date);
                     }
                 })

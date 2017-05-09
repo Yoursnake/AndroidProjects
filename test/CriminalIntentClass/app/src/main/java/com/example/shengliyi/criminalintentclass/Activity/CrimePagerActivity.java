@@ -1,4 +1,4 @@
-package com.example.shengliyi.criminalintentclass.Activity;
+package com.example.shengliyi.criminalintentclass.activity;
 
 
 import android.content.Context;
@@ -6,14 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 
-import com.example.shengliyi.criminalintentclass.Entity.Crime;
-import com.example.shengliyi.criminalintentclass.Entity.CrimeLab;
-import com.example.shengliyi.criminalintentclass.Fragment.CrimeFragment;
+import com.example.shengliyi.criminalintentclass.entity.Crime;
+import com.example.shengliyi.criminalintentclass.entity.CrimeLab;
+import com.example.shengliyi.criminalintentclass.fragment.CrimeFragment;
 import com.example.shengliyi.criminalintentclass.R;
 
 import java.util.List;
@@ -23,7 +23,8 @@ import java.util.UUID;
  * Created by shengliyi on 2017/3/19.
  */
 
-public class CrimePagerActivity extends FragmentActivity {
+public class CrimePagerActivity extends AppCompatActivity
+        implements CrimeFragment.Callbacks {
 
     private static final String EXTRA_CRIME_ID = "com.example.shengliyi.criminalintentclass.Activity.CrimePagerActivity.extra_crime_id";
     private ViewPager mViewPager;
@@ -62,5 +63,16 @@ public class CrimePagerActivity extends FragmentActivity {
         Intent intent = new Intent(packageContext, CrimePagerActivity.class);
         intent.putExtra(EXTRA_CRIME_ID, crimeId);
         return intent;
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
+    }
+
+    @Override
+    public void onCrimeDeleted(Crime crime) {
+        CrimeLab.getInstance(this).removeCrime(crime);
+        finish();
     }
 }

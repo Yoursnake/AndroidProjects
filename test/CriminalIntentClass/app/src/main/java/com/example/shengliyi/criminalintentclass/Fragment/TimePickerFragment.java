@@ -1,4 +1,4 @@
-package com.example.shengliyi.criminalintentclass.Fragment;
+package com.example.shengliyi.criminalintentclass.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -17,8 +17,6 @@ import com.example.shengliyi.criminalintentclass.R;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import static java.lang.System.in;
 
 /**
  * Created by shengliyi on 2017/3/19.

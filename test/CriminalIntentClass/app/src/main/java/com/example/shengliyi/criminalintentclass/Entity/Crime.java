@@ -1,4 +1,4 @@
-package com.example.shengliyi.criminalintentclass.Entity;
+package com.example.shengliyi.criminalintentclass.entity;
 
 import java.util.Date;
 import java.util.UUID;
@@ -13,9 +13,15 @@ public class Crime {
     private String mTitle;
     private boolean mIsSolved;
     private Date mDate;
+    private String mSuspect;
+    private String mTelephoneNumber;
 
     public Crime() {
-        mId = UUID.randomUUID();
+        this(UUID.randomUUID());
+    }
+
+    public Crime(UUID id) {
+        mId = id;
         mDate = new Date();
     }
 
@@ -45,5 +51,25 @@ public class Crime {
 
     public void setDate(Date date) {
         mDate = date;
+    }
+
+    public String getSuspect() {
+        return mSuspect;
+    }
+
+    public void setSuspect(String suspect) {
+        mSuspect = suspect;
+    }
+
+    public String getTelephoneNumber() {
+        return mTelephoneNumber;
+    }
+
+    public void setTelephoneNumber(String telephoneNumber) {
+        mTelephoneNumber = telephoneNumber;
+    }
+
+    public String getPhotoFileName() {
+        return "IMG_" + getId().toString() + ".jpg";
     }
 }

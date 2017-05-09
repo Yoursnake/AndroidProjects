@@ -1,11 +1,10 @@
-package com.example.shengliyi.criminalintentclass.Activity;
+package com.example.shengliyi.criminalintentclass.activity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 
-import com.example.shengliyi.criminalintentclass.Fragment.CrimeFragment;
-import com.example.shengliyi.criminalintentclass.Fragment.CrimeListFragment;
+import com.example.shengliyi.criminalintentclass.fragment.CrimeFragment;
 
 import java.util.UUID;
 

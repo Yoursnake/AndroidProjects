@@ -1,12 +1,17 @@
 package com.example.shengliyi.photogallery.entity;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by shengliyi on 2017/5/8.
  */
 
 public class GalleryItem {
+    @SerializedName("title")
     private String mCaption;
+    @SerializedName("id")
     private String mId;
+    @SerializedName("url_s")
     private String mUrl;
 
     public String getCaption() {
