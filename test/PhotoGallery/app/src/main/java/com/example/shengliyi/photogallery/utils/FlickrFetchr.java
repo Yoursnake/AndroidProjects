@@ -60,11 +60,12 @@ public class FlickrFetchr {
         return new String(getUrlBytes(urlSpec));
     }
 
-    public List<GalleryItem> fetchItems() {
+    public List<GalleryItem> fetchItems(Integer nextPage) {
 
         List<GalleryItem> items = new ArrayList<>();
 
-
+        // 表示查询第几页的数据
+        String page = Integer.toString(nextPage);
         // https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=0dd2bf7a825d7517b3b7be1aee77adc9&format=json&nojsoncallback=1&extras=url_s
         try {
             String url = Uri.parse("https://api.flickr.com/services/rest/")
@@ -74,6 +75,7 @@ public class FlickrFetchr {
                     .appendQueryParameter("format", "json")
                     .appendQueryParameter("nojsoncallback", "1")
                     .appendQueryParameter("extras", "url_s")
+                    .appendQueryParameter("page", page)
                     .build().toString();
             String jsonString = getUrlString(url);
             Log.i(TAG, "Received json:" + jsonString);
@@ -95,7 +97,6 @@ public class FlickrFetchr {
     private void parseItem(List<GalleryItem> items, JSONObject jsonObject) throws IOException, JSONException {
         JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
         JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
-
 
 
         for (int i = 0; i < photoJsonArray.length(); i++) {
