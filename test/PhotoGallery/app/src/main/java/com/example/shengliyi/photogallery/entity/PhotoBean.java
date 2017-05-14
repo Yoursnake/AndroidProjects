@@ -15,6 +15,8 @@ public class PhotoBean {
     private PhotosInfo mPhotosInfo;
     @SerializedName("stat")
     private String mStatus;
+    @SerializedName("photo")
+    List<GalleryItem> mPhoto;
 
     public PhotosInfo getPhotosInfo() {
         return mPhotosInfo;

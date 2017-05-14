@@ -80,10 +80,16 @@ public class FlickrFetchr {
             String jsonString = getUrlString(url);
             Log.i(TAG, "Received json:" + jsonString);
 
+            // 通过 gson 解析 json，需要提前创建 bean，一层就是一个类
             Gson gson = new Gson();
             PhotoBean photoBean = gson.fromJson(jsonString, PhotoBean.class);
             items = photoBean.getPhotosInfo().getPhoto();
 
+//            for (GalleryItem item : items) {
+//                Log.i(TAG, item.toString2());
+//            }
+
+//            通过普通方法解析 json
 //            JSONObject jsonBody = new JSONObject(jsonString);
 //            parseItem(items, jsonBody);
         } catch (IOException e) {

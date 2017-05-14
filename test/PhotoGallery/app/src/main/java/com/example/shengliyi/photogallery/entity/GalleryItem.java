@@ -42,4 +42,8 @@ public class GalleryItem {
     public String toString() {
         return mCaption;
     }
+
+    public String toString2() {
+        return "caption:" + mCaption + ",id:" + mId + ",url_s:" + mUrl;
+    }
 }

@@ -1,11 +1,17 @@
 package com.example.shengliyi.photogallery.fragment;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,16 +19,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shengliyi.photogallery.R;
 import com.example.shengliyi.photogallery.entity.GalleryItem;
 import com.example.shengliyi.photogallery.utils.FlickrFetchr;
+import com.example.shengliyi.photogallery.utils.ThumbnailDownloader;
 
 import java.util.List;
+
+import it.sephiroth.android.library.picasso.Picasso;
 
 import static java.lang.Thread.sleep;
 
@@ -42,6 +50,7 @@ public class PhotoGalleryFragment extends Fragment {
     private PhotoAdapter mPhotoAdapter;
     private Integer mNextPage;
     private int mLastPosition;
+    private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
 
     public static PhotoGalleryFragment newInstance() {
 
@@ -50,6 +59,30 @@ public class PhotoGalleryFragment extends Fragment {
         PhotoGalleryFragment fragment = new PhotoGalleryFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        mFetchItemsTask = new FetchItemsTask();
+        mNextPage = 1;
+        mFetchItemsTask.execute(mNextPage);
+
+        Handler responseHandler = new Handler();
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+                    @Override
+                    public void onThumbnailDownloaded(PhotoHolder target, Bitmap thumbnail) {
+                        Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                        target.bindDrawable(drawable);
+                    }
+                }
+        );
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -67,90 +100,20 @@ public class PhotoGalleryFragment extends Fragment {
 
 //        setupAdapter();
 
-        final RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-
-                // 找到移动后的最后位置
-                mLastPosition = layoutManager.findLastVisibleItemPosition();
-                // 如果目前状态为静止，且最后位置索引大于等于照片的数目
-                // 另外，之前的线程已处于完成状态则使用之前的线程爬取下一页的信息
-                if (newState == RecyclerView.SCROLL_STATE_IDLE
-                        && mLastPosition >= mPhotoAdapter.getItemCount() - 1) {
-                    if (mFetchItemsTask.getStatus() == AsyncTask.Status.FINISHED) {
-                        mNextPage++;
-
-                        if (mNextPage <= MAX_PAGES) {
-                            Toast.makeText(getActivity(), "Please wait to loading...", Toast.LENGTH_SHORT).show();
-                            // AsyncTask 只能执行一次，所以需要新建
-                            mFetchItemsTask = new FetchItemsTask();
-                            mFetchItemsTask.execute(mNextPage);
-                        } else {
-                            Toast.makeText(getActivity(), "This is the end!", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            }
-
-        };
-
-        mPhotoRecyclerView.addOnScrollListener(onScrollListener);
-
-        mPhotoRecyclerView.getViewTreeObserver()
-                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                // 按 1080p 三列的标准设置行数
-                int columns = mPhotoRecyclerView.getWidth() / 350;
-                // 重新设置 LayoutManager, Adapter, onScrollListener
-                mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), columns));
-                mPhotoRecyclerView.setAdapter(mPhotoAdapter);
-                mPhotoRecyclerView.addOnScrollListener(onScrollListener);
-                // 滚动到之前看到的位置
-                mPhotoRecyclerView.getLayoutManager().scrollToPosition(mLastPosition);
-                // 去除监听器，防止多次触发
-                mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
-        //  向上滑动
-//        mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//                GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-//                // 移动后的初始位置
-//                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-//                if (newState == RecyclerView.SCROLL_STATE_IDLE
-//                        && firstVisibleItemPosition == 0) {
-//                    if (mFetchItemsTask.getStatus() == AsyncTask.Status.FINISHED) {
-//                        mNextPage--;
-//
-//                        if (mNextPage >= 1) {
-//                            Toast.makeText(getActivity(), "Please wait to loading...", Toast.LENGTH_SHORT).show();
-//                            // AsyncTask 只能执行一次，所以需要新建
-//                            mFetchItemsTask = new FetchItemsTask();
-//                            mFetchItemsTask.execute(mNextPage);
-//                        } else {
-//                            Toast.makeText(getActivity(), "This is the top!", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                }
-//            }
-//        });
-
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailDownloader.clearQueue();
+    }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-        mFetchItemsTask = new FetchItemsTask();
-        mNextPage = 1;
-        mFetchItemsTask.execute(mNextPage);
+    public void onDestroy() {
+        super.onDestroy();
+        mThumbnailDownloader.quit();
+        Log.i(TAG, "Background thread destroyed");
     }
 
     // setupAdapter
@@ -175,16 +138,25 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
 
-        private TextView mTitleTextView;
+//        private TextView mTitleTextView;
+        private ImageView mItemImageView;
 
         public PhotoHolder(View itemView) {
             super(itemView);
 
-            mTitleTextView = (TextView) itemView;
+            mItemImageView = (ImageView) itemView;
+        }
+
+        public void bindDrawable(Drawable drawable) {
+            mItemImageView.setImageDrawable(drawable);
         }
 
         public void bindGalleryItem(GalleryItem item) {
-            mTitleTextView.setText(item.getCaption());
+            Picasso.with(getActivity())
+                    .load(item.getUrl())
+                    .placeholder(R.drawable.bill_up_close)
+                    .into(mItemImageView);
+
         }
     }
 
@@ -198,14 +170,24 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            TextView textView = new TextView(getActivity());
-            return new PhotoHolder(textView);
+            View view = getActivity().getLayoutInflater()
+                    .inflate(R.layout.gallery_item, parent, false);
+            return new PhotoHolder(view);
         }
 
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
             GalleryItem item = mGalleryItems.get(position);
+//            holder.bindGalleryItem(item);
+            Drawable placeHolder = ContextCompat.getDrawable(getActivity(),
+                    R.drawable.bill_up_close);
+//            holder.bindDrawable(placeHolder);
+//            mThumbnailDownloader.queueThumbnail(holder, item.getUrl());
             holder.bindGalleryItem(item);
+
+//            for (int i = Math.max(0, position - 10); i < position + 10; i++) {
+//                mThumbnailDownloader.queueThumbnail(holder, mGalleryItems.get(i).getUrl());
+//            }
         }
 
         @Override
@@ -239,6 +221,55 @@ public class PhotoGalleryFragment extends Fragment {
             mItems = items;
             updateAdapter();
             mProgressBar.setVisibility(View.GONE);
+
+            // 当更新完 adapter 后设置滑动监听器，否则 adapter 为空时无法调用 getItemCount() 等方法
+            final RecyclerView.OnScrollListener onDownScrollListener = new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+
+                    // 找到移动后的最后位置
+                    mLastPosition = layoutManager.findLastVisibleItemPosition();
+                    // 如果目前状态为静止，且最后位置索引大于等于照片的数目
+                    // 另外，之前的线程已处于完成状态则使用之前的线程爬取下一页的信息
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE
+                            && mLastPosition >= mPhotoAdapter.getItemCount() - 1) {
+                        if (mFetchItemsTask.getStatus() == AsyncTask.Status.FINISHED) {
+                            mNextPage++;
+
+                            if (mNextPage <= MAX_PAGES) {
+                                Toast.makeText(getActivity(), "Please wait to loading...", Toast.LENGTH_SHORT).show();
+                                // AsyncTask 只能执行一次，所以需要新建
+                                mFetchItemsTask = new FetchItemsTask();
+                                mFetchItemsTask.execute(mNextPage);
+                            } else {
+                                Toast.makeText(getActivity(), "This is the end!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }
+
+            };
+
+            mPhotoRecyclerView.addOnScrollListener(onDownScrollListener);
+
+            mPhotoRecyclerView.getViewTreeObserver()
+                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            // 按 1080p 三列的标准设置行数
+                            int columns = mPhotoRecyclerView.getWidth() / 350;
+                            // 重新设置 LayoutManager, Adapter, onDownScrollListener
+                            mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), columns));
+                            mPhotoRecyclerView.setAdapter(mPhotoAdapter);
+                            mPhotoRecyclerView.addOnScrollListener(onDownScrollListener);
+                            // 滚动到之前看到的位置
+                            mPhotoRecyclerView.getLayoutManager().scrollToPosition(mLastPosition);
+                            // 去除监听器，防止多次触发
+                            mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                    });
         }
     }
 }
