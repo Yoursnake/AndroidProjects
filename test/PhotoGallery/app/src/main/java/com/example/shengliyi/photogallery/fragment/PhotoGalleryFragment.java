@@ -1,6 +1,8 @@
 package com.example.shengliyi.photogallery.fragment;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -8,14 +10,19 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -25,7 +32,9 @@ import android.widget.Toast;
 
 import com.example.shengliyi.photogallery.R;
 import com.example.shengliyi.photogallery.entity.GalleryItem;
+import com.example.shengliyi.photogallery.service.PollService;
 import com.example.shengliyi.photogallery.utils.FlickrFetchr;
+import com.example.shengliyi.photogallery.utils.QueryPreferences;
 import com.example.shengliyi.photogallery.utils.ThumbnailDownloader;
 
 import java.util.List;
@@ -48,9 +57,13 @@ public class PhotoGalleryFragment extends Fragment {
     private List<GalleryItem> mItems;
     private FetchItemsTask mFetchItemsTask;
     private PhotoAdapter mPhotoAdapter;
-    private Integer mNextPage;
     private int mLastPosition;
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
+    private static Integer mNextPage;
+
+    public static void setNextPage(Integer nextPage) {
+        mNextPage = nextPage;
+    }
 
     public static PhotoGalleryFragment newInstance() {
 
@@ -65,9 +78,13 @@ public class PhotoGalleryFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mFetchItemsTask = new FetchItemsTask();
+        setHasOptionsMenu(true);
+
+        Intent intent = PollService.newIntent(getActivity());
+        getActivity().startService(intent);
+
         mNextPage = 1;
-        mFetchItemsTask.execute(mNextPage);
+        updateItems();
 
         Handler responseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
@@ -101,6 +118,53 @@ public class PhotoGalleryFragment extends Fragment {
 //        setupAdapter();
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_photo_gallery, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.menu_item_search);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.i(TAG, "QueryItemSubmit" + query);
+                QueryPreferences.setSearchQuery(getActivity(), query);
+                updateItems();
+                Toast.makeText(getActivity(), R.string.wait_search, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.i(TAG, "QueryItemChange" + newText);
+                return false;
+            }
+        });
+
+        searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String query = QueryPreferences.getSearchQuery(getActivity());
+                searchView.setQuery(query, false);  // 把存储的查询信息填上，但是不提交
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_clear:
+                QueryPreferences.setSearchQuery(getActivity(), null);
+                updateItems();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
     }
 
     @Override
@@ -152,6 +216,7 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
         public void bindGalleryItem(GalleryItem item) {
+
             Picasso.with(getActivity())
                     .load(item.getUrl())
                     .placeholder(R.drawable.bill_up_close)
@@ -185,9 +250,6 @@ public class PhotoGalleryFragment extends Fragment {
 //            mThumbnailDownloader.queueThumbnail(holder, item.getUrl());
             holder.bindGalleryItem(item);
 
-//            for (int i = Math.max(0, position - 10); i < position + 10; i++) {
-//                mThumbnailDownloader.queueThumbnail(holder, mGalleryItems.get(i).getUrl());
-//            }
         }
 
         @Override
@@ -205,15 +267,24 @@ public class PhotoGalleryFragment extends Fragment {
 
 
     private class FetchItemsTask extends AsyncTask<Integer, Void, List<GalleryItem>> {
+
+        private String mQuery;
+        private int mPage;
+
+        public FetchItemsTask(String query, int page) {
+            mQuery = query;
+            mPage = page;
+        }
+
         @Override
         protected List<GalleryItem> doInBackground(Integer... params) {
-            return new FlickrFetchr().fetchItems(params[0]);
-//            try {
-//                String result = new FlickrFetchr().getUrlString("https://www.sina.com.cn");
-//                Log.i(TAG, "doInBackground: " + result);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+
+            if (mQuery == null) {
+                return new FlickrFetchr().fetchRecentPhotos(mPage);
+            } else {
+                return new FlickrFetchr().searchPhotos(mQuery, mPage);
+            }
+
         }
 
         @Override
@@ -241,8 +312,7 @@ public class PhotoGalleryFragment extends Fragment {
                             if (mNextPage <= MAX_PAGES) {
                                 Toast.makeText(getActivity(), "Please wait to loading...", Toast.LENGTH_SHORT).show();
                                 // AsyncTask 只能执行一次，所以需要新建
-                                mFetchItemsTask = new FetchItemsTask();
-                                mFetchItemsTask.execute(mNextPage);
+                                updateItems();
                             } else {
                                 Toast.makeText(getActivity(), "This is the end!", Toast.LENGTH_SHORT).show();
                             }
@@ -271,5 +341,11 @@ public class PhotoGalleryFragment extends Fragment {
                         }
                     });
         }
+    }
+
+    private void updateItems() {
+        String query = QueryPreferences.getSearchQuery(getActivity());
+        mFetchItemsTask = new FetchItemsTask(query, mNextPage);
+        mFetchItemsTask.execute();
     }
 }
